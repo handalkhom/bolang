@@ -1,28 +1,37 @@
-import React from "react";
+/* eslint-disable react/prop-types */
+
 import "./App.css";
-import { Route, Routes, BrowserRouter } from "react-router-dom";
-import Login from "./components/pages/Login.jsx";
-import Register from "./components/pages/Register.jsx";
-import Dashboard from "./components/pages/Dashboard.jsx";
-import Book from "./components/pages/Book.jsx";
-import BookHistory from "./components/pages/BookHistory.jsx";
-import UserProfile from "./components/pages/UserProfile.jsx";
-import BookConfirmation from "./components/pages/BookConfirmation.jsx";
-import Welcome from "./components/pages/Welcome.jsx";
+import { Route, Routes, BrowserRouter, Navigate } from "react-router-dom";
+import Login from "./pages/Login.jsx";
+import Register from "./pages/Register.jsx";
+import Dashboard from "./pages/Dashboard.jsx";
+import Book from "./pages/Book.jsx";
+import BookHistory from "./pages/BookHistory.jsx";
+import UserProfile from "./pages/UserProfile.jsx";
+import BookConfirmation from "./pages/BookConfirmation.jsx";
+import Welcome from "./pages/Welcome.jsx";
+import Cookies from "js-cookie";
 
 function App() {
+  const ProtectedRoute = ({ element, ...rest }) => {
+    const isAuthenticated = Cookies.get("accessToken");
+
+    return isAuthenticated === "" || isAuthenticated === null || isAuthenticated === undefined ? <Navigate to="/login" state={{ from: rest.location }} /> : element;
+  };
   return (
     <>
       <BrowserRouter>
         <Routes>
-          <Route path="/" element={<Dashboard />} />
-          <Route path="/welcome" element={<Welcome />} />
-          <Route path="/book" element={<Book />} />
-          <Route path="/history" element={<BookHistory />} />
-          <Route path="/confirm" element={<BookConfirmation />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/profile" element={<UserProfile />} />
+          <Route path="/" element={<Welcome />} />
           <Route path="/register" element={<Register />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/dashboard">
+            <Route path="/dashboard/" element={<ProtectedRoute element={<Dashboard />} />} />
+            <Route path="/dashboard/:kategoriLapangan" element={<ProtectedRoute element={<Book />} />} />
+            <Route path="/dashboard/:kategoriLapangan/booking/:idOrder" element={<ProtectedRoute element={<BookConfirmation />} />} />
+          </Route>
+          <Route path="/history" element={<ProtectedRoute element={<BookHistory />} />} />
+          <Route path="/profile" element={<ProtectedRoute element={<UserProfile />} />} />
         </Routes>
       </BrowserRouter>
     </>

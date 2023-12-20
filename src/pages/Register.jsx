@@ -1,13 +1,38 @@
-import React from "react";
-import Logo from "../../assets/img/register.png";
+import Logo from "../assets/img/register.png";
 import { LockOutlined, UserOutlined, PhoneOutlined } from "@ant-design/icons";
-import { Button, Form, Input, ConfigProvider, Typography } from "antd";
-import { FormButton } from "../FormButton";
+import { Button, Form, Input, ConfigProvider, Typography, message } from "antd";
+import { FormButton } from "../components/FormButton";
+import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
 const Register = () => {
-  const onFinish = (values) => {
-    console.log("Received values of form: ", values);
+  const navigate = useNavigate();
+  const onFinish = async (values) => {
+    message.open({
+      type: "loading",
+      content: "Wait a second",
+    });
+    await axios
+      .post(`https://bolang-express.netlify.app/.netlify/functions/api/user/register`, values)
+      .then((response) => {
+        message.destroy();
+        message.open({
+          type: "success",
+          content: response.data.message,
+        });
+        setTimeout(() => {
+          navigate("/login");
+        }, 2000);
+      })
+      .catch(() => {
+        message.destroy();
+        message.open({
+          type: "error",
+          content: "Gagal membuat akun pengguna",
+        });
+      });
   };
+
   return (
     <div className="appBg auth">
       <Form
@@ -19,11 +44,9 @@ const Register = () => {
         onFinish={onFinish}
       >
         <img src={Logo} style={{ width: "38vh" }} />
-        <Typography.Title style={{ marginTop: "0.5rem" }}>
-          Welcome!
-        </Typography.Title>
+        <Typography.Title style={{ marginTop: "0.5rem" }}>Welcome!</Typography.Title>
         <Form.Item
-          name="namw"
+          name="nama"
           rules={[
             {
               required: true,
@@ -31,10 +54,7 @@ const Register = () => {
             },
           ]}
         >
-          <Input
-            prefix={<UserOutlined className="site-form-item-icon" />}
-            placeholder="Name"
-          />
+          <Input prefix={<UserOutlined className="site-form-item-icon" />} placeholder="Name" />
         </Form.Item>
         <Form.Item
           name="username"
@@ -45,13 +65,10 @@ const Register = () => {
             },
           ]}
         >
-          <Input
-            prefix={<UserOutlined className="site-form-item-icon" />}
-            placeholder="Username"
-          />
+          <Input prefix={<UserOutlined className="site-form-item-icon" />} placeholder="Username" />
         </Form.Item>
         <Form.Item
-          name="phone"
+          name="noPhone"
           rules={[
             {
               required: true,
@@ -59,10 +76,7 @@ const Register = () => {
             },
           ]}
         >
-          <Input
-            prefix={<PhoneOutlined className="site-form-item-icon" />}
-            placeholder="Phone Number"
-          />
+          <Input type="number" prefix={<PhoneOutlined className="site-form-item-icon" />} placeholder="Phone Number" />
         </Form.Item>
         <Form.Item
           name="password"
@@ -73,11 +87,7 @@ const Register = () => {
             },
           ]}
         >
-          <Input
-            prefix={<LockOutlined className="site-form-item-icon" />}
-            type="password"
-            placeholder="Password"
-          />
+          <Input.Password prefix={<LockOutlined className="site-form-item-icon" />} type="password" placeholder="Password" />
         </Form.Item>
         <Form.Item>
           <FormButton formButton="Sign Up" />
